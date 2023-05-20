@@ -10,8 +10,8 @@ public class Main {
 	private static List<ClientHandler> clients = new ArrayList<>();
 
 	public static void main(String[] args) {
-		try (ServerSocket serverSocket = new ServerSocket(1234)){
-					System.out.println("Server started and listening on port 1234");
+		try (ServerSocket serverSocket = new ServerSocket(1235)){
+					System.out.println("Server started and listening on port 1235");
 
 					while (true) {
 							Socket clientSocket = serverSocket.accept();
@@ -26,11 +26,11 @@ public class Main {
 			}
 	}
 
-	public static void broadcastMessage(Message message) {
-			for (ClientHandler client : clients) {
-					client.sendMessage(message);
-			}
-	}
+	// public static void broadcastMessage(Message message) {
+	// 		for (ClientHandler client : clients) {
+	// 				client.sendMessage(message);
+	// 		}
+	// }
 
 
 }
