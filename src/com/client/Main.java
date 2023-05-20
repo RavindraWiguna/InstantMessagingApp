@@ -8,6 +8,8 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
 
+import com.serialization.Person;
+
 public class Main {
   public static void main(String[] args) {
     try {
@@ -15,18 +17,11 @@ public class Main {
         Socket serverSocket = new Socket("localhost", 1235);
         System.out.println("Connected to server: " + serverSocket.getInetAddress());
 
-        // Create an output stream writer to send a plain text message to the server
-        OutputStream outputStream = serverSocket.getOutputStream();
-        OutputStreamWriter writer = new OutputStreamWriter(outputStream);
-
-        // Send a plain text message to the server
-        String clientMessage = "Hello, server! This is the client.";
-        writer.write(clientMessage);
-        writer.flush(); // Flush the writer to ensure the message is sent immediately
-
-        // Close the writer, reader, and socket
-        writer.close();
-        // reader.close();
+        Person person = new Person("John Doe", 30);
+        ObjectOutputStream ous = new ObjectOutputStream(serverSocket.getOutputStream());
+        ous.writeObject(person);
+        ous.flush();
+        ous.close();
         serverSocket.close();
     } catch (IOException e) {
         e.printStackTrace();

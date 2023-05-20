@@ -9,6 +9,8 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
 
+import com.serialization.Person;
+
 public class ClientHandler extends Thread {
   private Socket clientSocket;
   private ObjectOutputStream outputStream;
@@ -22,17 +24,17 @@ public class ClientHandler extends Thread {
       try {
         System.out.println("Client connected: " + clientSocket.getInetAddress());
 
-        // Create an input stream reader to read messages from the client
-        BufferedReader reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-
         // Read the message from the client
-        String clientMessage = reader.readLine();
-        System.out.println("Message from client: " + clientMessage);
-
+        ObjectInputStream ois = new ObjectInputStream(clientSocket.getInputStream());
+        Person person = (Person) ois.readObject();
+        System.out.println("Received: " + person.getFullName() + " " + person.getAge());
+        ois.close();
         clientSocket.close();
       } catch (IOException e) {
           e.printStackTrace();
-      }
+      } catch (ClassNotFoundException e) {
+        e.printStackTrace();
+    }
   }
 
   public void sendMessage(Message message) {
