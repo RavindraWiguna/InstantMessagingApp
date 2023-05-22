@@ -1,0 +1,21 @@
+{
+  "name": "instantmessagingapp",
+  "version": "1.0.0",
+  "description": "The repository for the network programming E 2022/2023 Tasks to build Instant Messaging App using socket.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "server": "nodemon ./server/script.js",
+    "client": "nodemon ./client/script.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RavindraWiguna/InstantMessagingApp.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/RavindraWiguna/InstantMessagingApp/issues"
+  },
+  "homepage": "https://github.com/RavindraWiguna/InstantMessagingApp#readme"
+}
