@@ -14,35 +14,37 @@ import com.serialization.Person;
 public class ClientHandler extends Thread {
   private Socket clientSocket;
   private ObjectOutputStream outputStream;
-//   private String username;
+  // private String username;
 
   public ClientHandler(Socket clientSocket) {
-      this.clientSocket = clientSocket;
+    this.clientSocket = clientSocket;
   }
 
   public void run() {
-      try {
-        System.out.println("Client connected: " + clientSocket.getInetAddress());
+    try {
+      System.out.println("Client connected: " + clientSocket.getInetAddress());
 
-        // Read the message from the client
-        ObjectInputStream ois = new ObjectInputStream(clientSocket.getInputStream());
-        Person person = (Person) ois.readObject();
-        System.out.println("Received: " + person.getFullName() + " " + person.getAge());
-        ois.close();
-        clientSocket.close();
-      } catch (IOException e) {
-          e.printStackTrace();
-      } catch (ClassNotFoundException e) {
-        e.printStackTrace();
+      // Read the message from the client
+      ObjectInputStream ois = new ObjectInputStream(clientSocket.getInputStream());
+      Person person = (Person) ois.readObject();
+
+      System.out.println("Received: " + person.getFullName());
+      ois.close();
+      clientSocket.close();
+    } catch (IOException e) {
+      e.printStackTrace();
+    } catch (ClassNotFoundException e) {
+      e.printStackTrace();
     }
   }
 
   public void sendMessage(Message message) {
-      try {
-          outputStream.writeObject(message);
-          outputStream.flush();
-      } catch (IOException e) {
-          e.printStackTrace();
-      }
+    try {
+      // Send the message to the client
+      outputStream.writeObject(message);
+      outputStream.flush();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
 }

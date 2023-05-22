@@ -10,27 +10,19 @@ public class Main {
 	private static List<ClientHandler> clients = new ArrayList<>();
 
 	public static void main(String[] args) {
-		try (ServerSocket serverSocket = new ServerSocket(1235)){
-					System.out.println("Server started and listening on port 1235");
+		try (ServerSocket serverSocket = new ServerSocket(1235)) {
+			System.out.println("Server started and listening on port 1235");
 
-					while (true) {
-							Socket clientSocket = serverSocket.accept();
-							System.out.println("New client connected: " + clientSocket);
+			while (true) {
+				Socket clientSocket = serverSocket.accept();
+				System.out.println("New client connected: " + clientSocket);
 
-							ClientHandler clientHandler = new ClientHandler(clientSocket);
-							clients.add(clientHandler);
-							clientHandler.start();
-					}
-			} catch (IOException e) {
-					e.printStackTrace();
+				ClientHandler clientHandler = new ClientHandler(clientSocket);
+				clients.add(clientHandler);
+				clientHandler.start();
 			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
-
-	// public static void broadcastMessage(Message message) {
-	// 		for (ClientHandler client : clients) {
-	// 				client.sendMessage(message);
-	// 		}
-	// }
-
-
 }
