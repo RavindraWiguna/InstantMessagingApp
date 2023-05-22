@@ -5,8 +5,9 @@ const host = "localhost";
 // Create a TCP client
 const client = new net.Socket();
 let messages = [];
-let username = "";
+let messagePrivate = {};
 
+let username = "";
 // Connect to the server
 client.connect(port, host, async () => {
   console.log("Connected to server");
@@ -54,6 +55,18 @@ client.on("data", (data) => {
     console.log(`${serialData.sender} : ${serialData.message}`);
     console.log("============================");
     messages.push(serialData);
+  } else if (serialData.state === 3) {
+    console.log("\n====== Private Message ======");
+    console.log(`${serialData.sender} : ${serialData.message}`);
+    console.log("============================");
+    if (messagePrivate[serialData.sender] == undefined) {
+      messagePrivate[serialData.sender] = [];
+    }
+    const msg = {
+      message: serialData.message,
+      sender: serialData.sender,
+    };
+    messagePrivate[serialData.sender].push(msg);
   }
 });
 
@@ -71,7 +84,9 @@ function showMenu() {
   console.log("1. Show online users");
   console.log("2. Send public message");
   console.log("3. Show public message");
-  console.log("4. Exit");
+  console.log("4. Send private message");
+  console.log("5. Show private message");
+  console.log("6. Exit");
 }
 
 function promptInput(question) {
@@ -118,6 +133,50 @@ async function goToMenu() {
     console.log("================================");
     goToMenu();
   } else if (choose === "4") {
+    console.log("choose user to send message");
+    const user = await promptInput("Enter username: ");
+    const message = await promptInput("Enter your message: ");
+    const data = {
+      state: 3,
+      message: message,
+      receiver: user,
+    };
+    if (messagePrivate[user] == undefined) {
+      messagePrivate[user] = [];
+    }
+    const msg = {
+      message: message,
+      sender: "me",
+    };
+    messagePrivate[user].push(msg);
+    sendMessage(JSON.stringify(data));
+    goToMenu();
+  } else if (choose === "5") {
+    console.log("================================");
+    console.log("OPEN PRIVATE CHAT");
+    console.log("--------------------------------");
+    if (Object.keys(messagePrivate).length === 0) {
+      console.log("No message");
+    } else {
+      // show listed user
+      for (const key in messagePrivate) {
+        console.log(`- ${key}`);
+      }
+      const uname = await promptInput("username: ");
+      if (messagePrivate[uname] == undefined) {
+        console.log("No message");
+      } else {
+        for (const key in messagePrivate[uname]) {
+          console.log(
+            `${messagePrivate[uname][key]["sender"]} : ${messagePrivate[uname][key]["message"]}`
+          );
+          console.log("--------------------------------");
+        }
+      }
+    }
+    console.log("================================");
+    goToMenu();
+  } else if (choose === "6") {
     console.log("Exiting...");
     closeSocket();
   } else {

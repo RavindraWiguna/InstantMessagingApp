@@ -72,6 +72,20 @@ const server = net.createServer((socket) => {
       };
       sendToAll(JSON.stringify(msg));
     } else if (serialData.state === 3) {
+      // send to specific client
+      const msg = {
+        state: 3,
+        message: serialData.message,
+        sender: username,
+      };
+      let isFound = false;
+      for (let i = 0; i < clientSockets.length; i++) {
+        if (serialData.receiver === clientSockets[i].username) {
+          clientSockets[i].socket.write(JSON.stringify(msg));
+          isFound = true;
+          break;
+        }
+      }
     }
   });
 
