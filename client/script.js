@@ -1,10 +1,11 @@
 const net = require("net");
-const port = 3000;
+const port = 1235;
 const host = "localhost";
 
 // Create a TCP client
 const client = new net.Socket();
-let onlineClient = [];
+let messages = [];
+let username = "";
 
 // Connect to the server
 client.connect(port, host, async () => {
@@ -21,6 +22,7 @@ client.connect(port, host, async () => {
       state: 0,
       username: name,
     };
+    username = name;
     client.write(JSON.stringify(data));
   });
 });
@@ -38,14 +40,20 @@ client.on("data", (data) => {
     }
   } else if (serialData.state === 1) {
     const lengthClient = serialData.clients.length;
-    console.log("client connected: ", lengthClient);
+    console.log("====== Online Users ======");
+    console.log("client online: ", lengthClient);
     if (lengthClient != 0) {
       for (let i = 0; i < serialData.clients.length; i++) {
         console.log(`${i + 1}. ${serialData.clients[i]}`);
       }
     }
-    console.log("================================");
+    console.log("==========================");
     goToMenu();
+  } else if (serialData.state === 2) {
+    console.log("\n====== Public Message ======");
+    console.log(`${serialData.sender} : ${serialData.message}`);
+    console.log("============================");
+    messages.push(serialData);
   }
 });
 
@@ -56,29 +64,66 @@ client.on("close", () => {
 
 // ===================== helper function ===================== //
 
+const readline = require("readline");
+
 function showMenu() {
   console.log("Welcome to the menu");
   console.log("1. Show online users");
-  console.log("2. Send message");
-  console.log("3. Exit");
+  console.log("2. Send public message");
+  console.log("3. Show public message");
+  console.log("4. Exit");
 }
 
-function goToMenu() {
-  showMenu();
-  const readline = require("readline").createInterface({
+function promptInput(question) {
+  const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
   });
 
-  readline.question("What do you want to do? ", (name) => {
-    readline.close();
-    if (name == 1) {
-      const data = {
-        state: 1,
-      };
-      sendMessage(JSON.stringify(data));
-    }
+  return new Promise((resolve) => {
+    rl.question(question, (input) => {
+      rl.close();
+      resolve(input);
+    });
   });
+}
+
+async function goToMenu() {
+  showMenu();
+  console.log("-----------------");
+  const choose = await promptInput("Enter your choice: ");
+
+  if (choose === "1") {
+    const data = {
+      state: 1,
+    };
+    sendMessage(JSON.stringify(data));
+  } else if (choose === "2") {
+    const message = await promptInput("Enter your message: ");
+    const data = {
+      state: 2,
+      message: message,
+    };
+    console.log("Message sent, waiting for response");
+    sendMessage(JSON.stringify(data));
+    goToMenu();
+  } else if (choose === "3") {
+    console.log("================================");
+    console.log("OPEN PUBLIC CHAT");
+    console.log("--------------------------------");
+    for (let i = 0; i < messages.length; i++) {
+      console.log(`${messages[i].sender} : ${messages[i].message}`);
+      console.log("--------------------------------");
+    }
+    console.log("================================");
+    goToMenu();
+  } else if (choose === "4") {
+    console.log("Exiting...");
+    closeSocket();
+  } else {
+    console.log("Invalid choice. Please try again.");
+    goToMenu();
+  }
 }
 
 function sendMessage(message) {

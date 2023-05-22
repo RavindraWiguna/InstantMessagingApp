@@ -1,5 +1,5 @@
 const net = require("net");
-const port = 3000;
+const port = 1235;
 const clientNames = ["rama", "suka", "mendol", "rere", "sama", "afiq", "apin"];
 /*
   socket: socket
@@ -11,6 +11,8 @@ let clientSockets = [];
   state
   0 = login
   1 = online user
+  2 = msg public
+  3 = msg private
 */
 
 /*
@@ -23,7 +25,7 @@ let clientSockets = [];
 const server = net.createServer((socket) => {
   console.log("Client connected");
   // Handle incoming data from the client
-  let username = "=";
+  let username = "";
   socket.on("data", (data) => {
     const serialData = JSON.parse(data.toString());
     if (serialData.state === 0) {
@@ -61,6 +63,15 @@ const server = net.createServer((socket) => {
         clients: connectedClient,
       };
       socket.write(JSON.stringify(msg));
+    } else if (serialData.state === 2) {
+      // send to all connected clients
+      const msg = {
+        state: 2,
+        message: serialData.message,
+        sender: username,
+      };
+      sendToAll(JSON.stringify(msg));
+    } else if (serialData.state === 3) {
     }
   });
 
