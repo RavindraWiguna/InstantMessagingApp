@@ -47,7 +47,7 @@ public class MessageSender extends Thread{
             Message sendMsg;
             StringBuilder restOfStringBuilder;
             while(isRun){
-                System.out.printf("Your message:\n");
+//                System.out.printf("Your message:\n");
                 message = sc.nextLine();
                 // parse pesan
                 String[] words = message.trim().split(" ");
@@ -59,7 +59,7 @@ public class MessageSender extends Thread{
                             break;
 
                         case "$all":
-                            System.out.print("Broadcasting\n");
+//                            System.out.print("Broadcasting\n");
                             // Concatenating the remaining words
                             restOfStringBuilder = new StringBuilder();
                             for (int i = 1; i < words.length; i++) {
