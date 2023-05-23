@@ -6,6 +6,7 @@ public class Message implements Serializable {
   private String senderName;
   private String message;
   private boolean isBroadcast;
+  private boolean isCheckOnline;
   private String receiverName;
 
   public Message(String senderName, String receiverName, String message){
@@ -13,8 +14,12 @@ public class Message implements Serializable {
     this.message = message;
     this.receiverName = receiverName;
     this.isBroadcast=false;
-    if(receiverName.startsWith("$")){
+    this.isCheckOnline=false;
+    if(receiverName.equals("$broadcast")){
       this.isBroadcast = true;
+    }
+    if(receiverName.equals("$user")){
+      this.isCheckOnline=true;
     }
   }
 
@@ -34,7 +39,17 @@ public class Message implements Serializable {
     return receiverName;
   }
 
+  public boolean isCheckOnline() {
+    return isCheckOnline;
+  }
+
   public void printMessage(){
+    if(isCheckOnline){
+      // sender is the list name
+      System.out.printf("[%s] is online.\n", this.senderName);
+      return;
+    }
+
     if(isBroadcast){
       System.out.printf("[All][%s]:%s\n", this.senderName, this.message);
     }else{

@@ -49,35 +49,25 @@ public class ClientHandler extends Thread {
   public void run(){
     Object obj;
     try{
-      // loop baca kiriman si client
+      // loop baca kiriman si client sample dapet null
       while ((obj = ois.readObject()) != null) {
 
         if(obj instanceof Message){
           Message msg = (Message) obj;
-          System.out.printf("Ok got msg, sender from: %s, to %s, msg:%s\n", msg.getSenderName(), msg.getReceiverName(), msg.getMessage());
 
-          // cek ini pesan ke broadcast apa ke private
-          if(msg.isBroadcast()){
-            // broadcast kirim ke semua
-            for (ClientHandler cl : clients) {
-              this.mutex.lock(); // lok dulu this client
-              cl.sendMessage(msg);
-              this.mutex.unlock();
-            }
+          System.out.printf("Ok got msg, from: %s, to %s, msg:%s\n", msg.getSenderName(), msg.getReceiverName(), msg.getMessage());
+
+          if(!msg.isCheckOnline()){
+            // message pesan biasa dari client
+            handleNormalMessage(msg);
           }
 
           else{
-            // ok ini berarti private meseji, kirim ke penerima sesuai
-//            System.out.printf("Not implemented yet\n");
-            for(ClientHandler cl : clients){
-              if(cl.name.equals(msg.getReceiverName())){
-                this.mutex.lock();
-                cl.sendMessage(msg);
-                this.mutex.unlock();
-                break;
-              }
-
-
+            // message minta user online dari client
+            for(ClientHandler cl:clients){
+              Message sendMsg = new Message(cl.name, "$user", "");
+              // kirim ke client kita about this user
+              this.sendMessage(sendMsg);
             }
           }
         }
@@ -86,6 +76,15 @@ public class ClientHandler extends Thread {
           System.out.println("Received unknown object from le client: " + obj);
         }
       }
+
+      // kirim null ke si client
+      this.sendNull();
+
+      // tutup soket, remove client
+      this.socket.close();
+      this.mutex.lock();
+      this.clients.remove(this);
+      System.out.printf("Finish Job\n");
     }
 
     catch (IOException | ClassNotFoundException e){
@@ -102,6 +101,44 @@ public class ClientHandler extends Thread {
     }
     catch (IOException e){
       closeAll(this.socket);
+    }
+  }
+
+  public void sendNull(){
+    try{
+      this.oos.writeObject(null);
+      this.oos.flush();
+    }
+    catch (IOException e){
+      closeAll(this.socket);
+    }
+  }
+
+  public void handleNormalMessage(Message msg){
+
+    // cek ini pesan ke broadcast apa ke private
+    if(msg.isBroadcast()){
+      // broadcast kirim ke semua
+      for (ClientHandler cl : clients) {
+        this.mutex.lock(); // lok dulu this client
+        cl.sendMessage(msg);
+        this.mutex.unlock();
+      }
+    }
+
+    else{
+      // ok ini berarti private meseji, kirim ke penerima sesuai
+//            System.out.printf("Not implemented yet\n");
+      for(ClientHandler cl : clients){
+        if(cl.name.equals(msg.getReceiverName())){
+          this.mutex.lock();
+          cl.sendMessage(msg);
+          this.mutex.unlock();
+          break;
+        }
+
+
+      }
     }
   }
 
