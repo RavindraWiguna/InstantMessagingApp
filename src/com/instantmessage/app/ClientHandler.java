@@ -1,76 +1,109 @@
 package com.instantmessage.app;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
+import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Vector;
+import java.util.concurrent.locks.ReentrantLock;
+
+import com.instantmessage.app.Message;
 
 public class ClientHandler extends Thread {
 
-  public static ArrayList<ClientHandler> clientHandlers = new ArrayList<>();
   public Socket socket;
+  private ObjectInputStream ois;
+  private ObjectOutputStream oos;
   private BufferedReader buffReader;
   private BufferedWriter buffWriter;
   private String name;
 
-  public ClientHandler(Socket socket) {
+  private ReentrantLock mutex;
+  private List<ClientHandler> clients;
+
+  public ClientHandler(Socket socket, List<ClientHandler> clients) {
     // Constructors of all the private classes
     try {
       this.socket = socket;
       this.buffWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+      this.ois = new ObjectInputStream(socket.getInputStream());
+      this.oos = new ObjectOutputStream(socket.getOutputStream());
       this.buffReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-      this.name = buffReader.readLine();
-      clientHandlers.add(this);
-      boradcastMessage("[ " + name + " has connected!]");
 
-    } catch (IOException e) {
-      closeAll(socket, buffReader, buffWriter);
-    }
-  }
-
-  public void run() {
-
-    String messageFromClient;
-
-    while (socket.isConnected()) {
-      try {
-        messageFromClient = buffReader.readLine();
-        boradcastMessage(messageFromClient);
-      } catch (IOException e) {
-        closeAll(socket, buffReader, buffWriter);
-        break;
+      // baca nama
+      Object obj = ois.readObject();
+      if(obj instanceof Message){
+        Message init = (Message) obj;
+        this.name = init.getSenderName();
+        System.out.printf("Connected to user: %s\n", this.name);
       }
+      else {
+        System.out.println("Received unknown object from le client: " + obj);
+      }
+
+      this.mutex = new ReentrantLock();
+      this.clients = clients;
+
+    } catch (IOException | ClassNotFoundException e) {
+      closeAll(socket);
     }
   }
 
-  public void boradcastMessage(String messageToSend) {
-    for (ClientHandler clientHandler : clientHandlers) {
-      try {
-        if (!clientHandler.name.equals(name)) {
-          clientHandler.buffWriter.write(messageToSend);
-          clientHandler.buffWriter.newLine();
-          clientHandler.buffWriter.flush();
+  @Override
+  public void run(){
+    Object obj;
+    try{
+      // loop baca kiriman si client
+      while ((obj = ois.readObject()) != null) {
+
+        if(obj instanceof Message){
+          Message msg = (Message) obj;
+          System.out.printf("Ok got msg, sender from: %s, to %s, msg:%s\n", msg.getSenderName(), msg.getReceiverName(), msg.getMessage());
+
+          // cek ini pesan ke broadcast apa ke private
+          if(msg.isBroadcast()){
+            for (ClientHandler cl : clients) {
+              this.mutex.lock(); // lok dulu this client
+              cl.broadcastMessage(msg);
+              this.mutex.unlock();
+            }
+          }
+
+          else{
+            System.out.printf("Not implemented yet\n");
+          }
         }
-      } catch (IOException e) {
-        closeAll(socket, buffReader, buffWriter);
 
+        else{
+          System.out.println("Received unknown object from le client: " + obj);
+        }
       }
+    }
+
+    catch (IOException | ClassNotFoundException e){
+      closeAll(this.socket);
     }
   }
 
-  // notify if the user left the chat
-  public void removeClientHandler() {
-    clientHandlers.remove(this);
-    boradcastMessage("[ " + name + " has disconnected!]");
+
+  public void broadcastMessage(Message msg) {
+    // kirim ke clientnya ini ada broadcast meseji
+    try{
+      this.oos.writeObject(msg);
+      this.oos.flush();
+    }
+    catch (IOException e){
+      closeAll(this.socket);
+    }
   }
 
-  public void closeAll(Socket socket, BufferedReader buffReader, BufferedWriter buffWriter) {
+
+  public void closeAll(Socket socket) {
 
     // handle the removeClient funciton
-    removeClientHandler();
+    // PENTING REMOVE SELF YAAA
+//    removeClientHandler();
     try {
       if (buffReader != null) {
         buffReader.close();
@@ -88,3 +121,24 @@ public class ClientHandler extends Thread {
   }
 
 }
+
+//  public void run() {
+//
+//    String messageFromClient;
+//
+//    while (socket.isConnected()) {
+//      try {
+//        messageFromClient = buffReader.readLine();
+//        boradcastMessage(messageFromClient);
+//      } catch (IOException e) {
+//        closeAll(socket, buffReader, buffWriter);
+//        break;
+//      }
+//    }
+//  }
+
+// notify if the user left the chat
+//  public void removeClientHandler() {
+//    clientHandlers.remove(this);
+//    boradcastMessage("[ " + name + " has disconnected!]");
+//  }

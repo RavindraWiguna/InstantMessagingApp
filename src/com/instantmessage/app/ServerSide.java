@@ -5,10 +5,12 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Vector;
 
 public class ServerSide {
 	private ServerSocket serverSocket;
-	private static List<ClientHandler> clients = new ArrayList<>();
+	private List<ClientHandler> clients = new ArrayList<>();
 
 	// Constructor
 	public ServerSide(ServerSocket serverSocket) {
@@ -21,7 +23,7 @@ public class ServerSide {
 			// this will keep the server running
 			while (!serverSocket.isClosed()) {
 				Socket clientSocket = serverSocket.accept();
-				ClientHandler clientHandler = new ClientHandler(clientSocket);
+				ClientHandler clientHandler = new ClientHandler(clientSocket, clients);
 				clients.add(clientHandler);
 				clientHandler.start();
 			}
