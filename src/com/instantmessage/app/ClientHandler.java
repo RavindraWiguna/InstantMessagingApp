@@ -2,13 +2,8 @@ package com.instantmessage.app;
 
 import java.io.*;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Vector;
 import java.util.concurrent.locks.ReentrantLock;
-
-import com.instantmessage.app.Message;
 
 public class ClientHandler extends Thread {
 
@@ -63,15 +58,27 @@ public class ClientHandler extends Thread {
 
           // cek ini pesan ke broadcast apa ke private
           if(msg.isBroadcast()){
+            // broadcast kirim ke semua
             for (ClientHandler cl : clients) {
               this.mutex.lock(); // lok dulu this client
-              cl.broadcastMessage(msg);
+              cl.sendMessage(msg);
               this.mutex.unlock();
             }
           }
 
           else{
-            System.out.printf("Not implemented yet\n");
+            // ok ini berarti private meseji, kirim ke penerima sesuai
+//            System.out.printf("Not implemented yet\n");
+            for(ClientHandler cl : clients){
+              if(cl.name.equals(msg.getReceiverName())){
+                this.mutex.lock();
+                cl.sendMessage(msg);
+                this.mutex.unlock();
+                break;
+              }
+
+
+            }
           }
         }
 
@@ -87,7 +94,7 @@ public class ClientHandler extends Thread {
   }
 
 
-  public void broadcastMessage(Message msg) {
+  public void sendMessage(Message msg) {
     // kirim ke clientnya ini ada broadcast meseji
     try{
       this.oos.writeObject(msg);

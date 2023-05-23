@@ -75,7 +75,7 @@ public class MessageSender extends Thread{
                             break;
 
                         case "$pm":
-                            System.out.print("PC sir\n");
+//                            System.out.print("PC sir\n");
                             restOfStringBuilder = new StringBuilder();
                             for (int i = 2; i < words.length; i++) {
                                 restOfStringBuilder.append(words[i]);
