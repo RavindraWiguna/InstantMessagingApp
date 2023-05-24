@@ -3,8 +3,8 @@ package com.instantmessage.app;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
 
@@ -14,48 +14,57 @@ public class ClientHandler extends Thread {
   public Socket socket;
   private BufferedReader buffReader;
   private BufferedWriter buffWriter;
+  private ObjectInputStream objectInputStream;
+  private ObjectOutputStream objectOutputStream;
   private String name;
 
   public ClientHandler(Socket socket) {
     // Constructors of all the private classes
     try {
       this.socket = socket;
-      this.buffWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-      this.buffReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-      this.name = buffReader.readLine();
+      this.objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
+      this.objectInputStream = new ObjectInputStream(socket.getInputStream());
+      System.out.println("a");
+      this.name = (String) objectInputStream.readObject();
+      System.out.println("b");
       clientHandlers.add(this);
-      boradcastMessage("[ " + name + " has connected!]");
+      broadcastMessage("[ " + name + " has connected!]");
 
     } catch (IOException e) {
-      closeAll(socket, buffReader, buffWriter);
+      // closeAll(socket, buffReader, buffWriter);
+    } catch (ClassNotFoundException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
     }
   }
 
   public void run() {
 
-    String messageFromClient;
-
     while (socket.isConnected()) {
       try {
-        messageFromClient = buffReader.readLine();
-        boradcastMessage(messageFromClient);
+        System.out.print("1");
+        String messageFromClient = (String) objectInputStream.readObject();
+        System.out.println(messageFromClient);
+        broadcastMessage(messageFromClient);
       } catch (IOException e) {
-        closeAll(socket, buffReader, buffWriter);
+        // closeAll(socket, buffReader, buffWriter);
         break;
+      } catch (ClassNotFoundException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
       }
     }
   }
 
-  public void boradcastMessage(String messageToSend) {
+  public void broadcastMessage(String messageToSend) {
     for (ClientHandler clientHandler : clientHandlers) {
       try {
         if (!clientHandler.name.equals(name)) {
-          clientHandler.buffWriter.write(messageToSend);
-          clientHandler.buffWriter.newLine();
-          clientHandler.buffWriter.flush();
+          clientHandler.objectOutputStream.writeObject(messageToSend);
+          clientHandler.objectOutputStream.flush();
         }
       } catch (IOException e) {
-        closeAll(socket, buffReader, buffWriter);
+        // closeAll(socket, buffReader, buffWriter);
 
       }
     }
@@ -64,7 +73,7 @@ public class ClientHandler extends Thread {
   // notify if the user left the chat
   public void removeClientHandler() {
     clientHandlers.remove(this);
-    boradcastMessage("[ " + name + " has disconnected!]");
+    broadcastMessage("[ " + name + " has disconnected!]");
   }
 
   public void closeAll(Socket socket, BufferedReader buffReader, BufferedWriter buffWriter) {

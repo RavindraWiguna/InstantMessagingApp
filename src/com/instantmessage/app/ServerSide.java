@@ -24,6 +24,7 @@ public class ServerSide {
 				ClientHandler clientHandler = new ClientHandler(clientSocket);
 				clients.add(clientHandler);
 				clientHandler.start();
+				System.out.println("Client connected: " + clientSocket.getInetAddress());
 			}
 		} catch (IOException e) {
 
