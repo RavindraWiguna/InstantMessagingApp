@@ -61,7 +61,7 @@ public class ClientSide {
           System.out.printf("Name cannot contain space ' '\n");
         }
         else{
-          isCorrect=true
+          isCorrect=true;
         }
       }
 
