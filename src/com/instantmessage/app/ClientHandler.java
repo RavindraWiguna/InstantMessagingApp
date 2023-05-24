@@ -84,6 +84,7 @@ public class ClientHandler extends Thread {
       this.socket.close();
       this.mutex.lock();
       this.clients.remove(this);
+      this.mutex.unlock();
       System.out.printf("Finish Job\n");
     }
 
