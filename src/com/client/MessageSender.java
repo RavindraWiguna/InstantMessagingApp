@@ -7,40 +7,30 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.Scanner;
 
-public class MessageSender extends Thread{
-//    private Socket socket;
+public class MessageSender extends Thread {
+    // private Socket socket;
     private ObjectOutputStream oos;
     private String senderName;
 
-    public MessageSender(ObjectOutputStream oos, String senderName){
-//        try{
-//            this.socket = socket;
-//            this.oos = new ObjectOutputStream(new socket.getOutputStream());
-            this.senderName = senderName;
-            this.oos = oos;
-//        }
-//        catch (IOException e){
-//            System.out.print("Error di message sender\n");
-//            closeAll(this.socket);
-//        }
+    public MessageSender(ObjectOutputStream oos, String senderName) {
+        this.senderName = senderName;
+        this.oos = oos;
     }
 
-    public void sendNull(){
-        try{
+    public void sendNull() {
+        try {
             this.oos.writeObject(null);
             this.oos.flush();
-        }
-        catch (IOException e){
+        } catch (IOException e) {
             System.err.print(e);
         }
     }
 
-    public void sendToServer(Message msg){
-        try{
+    public void sendToServer(Message msg) {
+        try {
             this.oos.writeObject(msg);
             this.oos.flush();
-        }
-        catch (IOException e){
+        } catch (IOException e) {
             System.err.print(e);
         }
     }
@@ -57,28 +47,28 @@ public class MessageSender extends Thread{
     }
 
     @Override
-    public void run(){
+    public void run() {
         boolean isRun = true;
         Scanner sc = new Scanner(System.in);
-        String message  = "";
+        String message = "";
         String finalMsg = "";
         Message sendMsg;
         StringBuilder restOfStringBuilder;
-        while(isRun){
-//            System.out.printf("Your message:\n");
+        while (isRun) {
+            // System.out.printf("Your message:\n");
             message = sc.nextLine();
             // parse pesan
             String[] words = message.trim().split(" ");
-            if(words.length > 0){
-                switch (words[0]){
+            if (words.length > 0) {
+                switch (words[0]) {
                     case "$exit":
-                        isRun=false;
+                        isRun = false;
                         System.out.print("Exiting\n");
                         sendNull();
                         break;
 
                     case "$all":
-//                            System.out.print("Broadcasting\n");
+                        // System.out.print("Broadcasting\n");
                         // Concatenating the remaining words
                         restOfStringBuilder = new StringBuilder();
                         for (int i = 1; i < words.length; i++) {
@@ -93,7 +83,7 @@ public class MessageSender extends Thread{
                         break;
 
                     case "$pm":
-//                            System.out.print("PC sir\n");
+                        // System.out.print("PC sir\n");
                         restOfStringBuilder = new StringBuilder();
                         for (int i = 2; i < words.length; i++) {
                             restOfStringBuilder.append(words[i]);
@@ -108,7 +98,7 @@ public class MessageSender extends Thread{
 
                     case "$user":
                         // to be implemented
-//                        System.out.print("Check online\n");
+                        // System.out.print("Check online\n");
                         sendMsg = new Message(this.senderName, "$user", "");
                         sendToServer(sendMsg);
                         break;

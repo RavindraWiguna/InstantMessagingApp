@@ -28,12 +28,11 @@ public class ClientHandler extends Thread {
 
       // baca nama
       Object obj = ois.readObject();
-      if(obj instanceof Message){
+      if (obj instanceof Message) {
         Message init = (Message) obj;
         this.name = init.getSenderName();
         System.out.printf("Connected to user: %s\n", this.name);
-      }
-      else {
+      } else {
         System.out.println("Received unknown object from le client: " + obj);
       }
 
@@ -46,25 +45,26 @@ public class ClientHandler extends Thread {
   }
 
   @Override
-  public void run(){
+  public void run() {
     Object obj;
-    try{
+    try {
       // loop baca kiriman si client sample dapet null
       while ((obj = ois.readObject()) != null) {
 
-        if(obj instanceof Message){
+        if (obj instanceof Message) {
           Message msg = (Message) obj;
 
-          System.out.printf("Ok got msg, from: %s, to %s, msg:%s\n", msg.getSenderName(), msg.getReceiverName(), msg.getMessage());
+          System.out.printf("Ok got msg, from: %s, to %s, msg:%s\n", msg.getSenderName(), msg.getReceiverName(),
+              msg.getMessage());
 
-          if(!msg.isCheckOnline()){
+          if (!msg.isCheckOnline()) {
             // message pesan biasa dari client
             handleNormalMessage(msg);
           }
 
-          else{
+          else {
             // message minta user online dari client
-            for(ClientHandler cl:clients){
+            for (ClientHandler cl : clients) {
               Message sendMsg = new Message(cl.name, "$user", "");
               // kirim ke client kita about this user
               this.sendMessage(sendMsg);
@@ -72,7 +72,7 @@ public class ClientHandler extends Thread {
           }
         }
 
-        else{
+        else {
           System.out.println("Received unknown object from le client: " + obj);
         }
       }
@@ -87,37 +87,34 @@ public class ClientHandler extends Thread {
       System.out.printf("Finish Job\n");
     }
 
-    catch (IOException | ClassNotFoundException e){
+    catch (IOException | ClassNotFoundException e) {
       closeAll(this.socket);
     }
   }
-
 
   public void sendMessage(Message msg) {
     // kirim ke clientnya ini ada broadcast meseji
-    try{
+    try {
       this.oos.writeObject(msg);
       this.oos.flush();
-    }
-    catch (IOException e){
+    } catch (IOException e) {
       closeAll(this.socket);
     }
   }
 
-  public void sendNull(){
-    try{
+  public void sendNull() {
+    try {
       this.oos.writeObject(null);
       this.oos.flush();
-    }
-    catch (IOException e){
+    } catch (IOException e) {
       closeAll(this.socket);
     }
   }
 
-  public void handleNormalMessage(Message msg){
+  public void handleNormalMessage(Message msg) {
 
     // cek ini pesan ke broadcast apa ke private
-    if(msg.isBroadcast()){
+    if (msg.isBroadcast()) {
       // broadcast kirim ke semua
       for (ClientHandler cl : clients) {
         this.mutex.lock(); // lok dulu this client
@@ -126,28 +123,24 @@ public class ClientHandler extends Thread {
       }
     }
 
-    else{
+    else {
       // ok ini berarti private meseji, kirim ke penerima sesuai
-//            System.out.printf("Not implemented yet\n");
-      for(ClientHandler cl : clients){
-        if(cl.name.equals(msg.getReceiverName())){
+      // System.out.printf("Not implemented yet\n");
+      for (ClientHandler cl : clients) {
+        if (cl.name.equals(msg.getReceiverName())) {
           this.mutex.lock();
           cl.sendMessage(msg);
           this.mutex.unlock();
           break;
         }
 
-
       }
     }
   }
 
-
   public void closeAll(Socket socket) {
 
-    // handle the removeClient funciton
-    // PENTING REMOVE SELF YAAA
-//    removeClientHandler();
+    // handle the removeClient funciton;
     try {
       if (buffReader != null) {
         buffReader.close();
@@ -163,26 +156,4 @@ public class ClientHandler extends Thread {
     }
 
   }
-
 }
-
-//  public void run() {
-//
-//    String messageFromClient;
-//
-//    while (socket.isConnected()) {
-//      try {
-//        messageFromClient = buffReader.readLine();
-//        boradcastMessage(messageFromClient);
-//      } catch (IOException e) {
-//        closeAll(socket, buffReader, buffWriter);
-//        break;
-//      }
-//    }
-//  }
-
-// notify if the user left the chat
-//  public void removeClientHandler() {
-//    clientHandlers.remove(this);
-//    boradcastMessage("[ " + name + " has disconnected!]");
-//  }
