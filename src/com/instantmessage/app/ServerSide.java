@@ -1,12 +1,12 @@
 package com.instantmessage.app;
 
+import javax.net.ServerSocketFactory;
+import javax.net.ssl.SSLServerSocket;
+import javax.net.ssl.SSLServerSocketFactory;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Vector;
+import java.util.*;
 
 public class ServerSide {
 	private ServerSocket serverSocket;
@@ -46,5 +46,16 @@ public class ServerSide {
 		ServerSocket serverSocket = new ServerSocket(1235);
 		ServerSide server = new ServerSide(serverSocket);
 		server.serverStart();
+
+
+//		ServerSocketFactory ssf = SSLServerSocketFactory.getDefault();
+//		ServerSocket ss = ssf.createServerSocket(1235);
+//		SSLServerSocket sslServerSocket = (SSLServerSocket) ss;
+//		sslServerSocket.setEnabledProtocols(new String[] {"TLSv1.2"});
+////		sslServerSocket.setEnabledCipherSuites(new String[] {"TLS_RSA_WITH_AES_128_GCM_SHA256"});
+//		String[] supportedCipherSuites = sslServerSocket.getSupportedCipherSuites();
+//		System.out.println("Supported Cipher Suites on Server: " + Arrays.toString(supportedCipherSuites));
+//		ServerSide server = new ServerSide(sslServerSocket);
+//		server.serverStart();
 	}
 }
