@@ -40,6 +40,7 @@ public class ClientHandler extends Thread {
       this.clients = clients;
 
     } catch (IOException | ClassNotFoundException e) {
+      System.err.print(e);
       closeAll(socket);
     }
   }

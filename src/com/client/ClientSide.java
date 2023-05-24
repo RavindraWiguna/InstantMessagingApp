@@ -2,6 +2,8 @@ package com.client;
 
 import com.instantmessage.app.Message;
 
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
 import java.io.*;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -27,6 +29,7 @@ public class ClientSide {
       this.ois = new ObjectInputStream(socket.getInputStream());
 
     } catch (IOException e) {
+      System.err.print(e);
       closeAll(socket);
     }
   }
@@ -47,11 +50,18 @@ public class ClientSide {
 
       // GET NAME
       String name = "$";
-      while (name.startsWith("$")) {
+      boolean isCorrect = false;
+      while (!isCorrect) {
         System.out.print("Enter your username:");
         name = sc.nextLine();
         if (name.startsWith("$")) {
           System.out.printf("Name cannot start with '$'\n");
+        }
+        else if(name.contains(" ")){
+          System.out.printf("Name cannot contain space ' '\n");
+        }
+        else{
+          isCorrect=true
         }
       }
 
@@ -65,6 +75,12 @@ public class ClientSide {
       // START CONNECTION
       Socket socket = new Socket("localhost", 1235);
       ClientSide client = new ClientSide(socket, name);
+
+//      SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+//      SSLSocket socket = (SSLSocket) factory.createSocket("localhost", 1235);
+//      socket.setEnabledProtocols(new String[] {"TLSv1.2"});
+//      socket.setEnabledCipherSuites(new String[] {"TLS_RSA_WITH_AES_128_CBC_SHA256"});
+//      ClientSide client = new ClientSide(socket, name);
 
       // kasi tau nama
       Message init = new Message(name, "", "");
